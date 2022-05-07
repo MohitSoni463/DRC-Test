@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun afterTextChanged(p0: Editable?) {
-                citiesAdapter
+                citiesAdapter.filter.filter(p0.toString())
             }
         })
     }

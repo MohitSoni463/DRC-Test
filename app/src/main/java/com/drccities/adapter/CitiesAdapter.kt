@@ -2,6 +2,8 @@ package com.drccities.adapter
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,10 +15,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.drccities.R
 import com.drccities.models.CitiesData
 import com.google.android.material.textview.MaterialTextView
+import java.util.*
+import kotlin.collections.ArrayList
 
-class CitiesAdapter(val context: Context, val items: MutableList<CitiesData>): RecyclerView.Adapter<CitiesAdapter.ViewHolder>(), Filterable {
+class CitiesAdapter(val context: Context, val items: MutableList<CitiesData>) :
+    RecyclerView.Adapter<CitiesAdapter.ViewHolder>(), Filterable {
 
-    private var itemsAll:ArrayList<CitiesData> = ArrayList(items)
+    private var itemsAll: ArrayList<CitiesData> = ArrayList(items)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val v = LayoutInflater.from(context).inflate(R.layout.cities, parent, false)
@@ -29,7 +34,7 @@ class CitiesAdapter(val context: Context, val items: MutableList<CitiesData>): R
 
     override fun getItemCount() = items.size
 
-    inner class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
+    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val city: MaterialTextView = itemView.findViewById(R.id.title_city)
         val country: MaterialTextView = itemView.findViewById(R.id.title_country)
         val lat: MaterialTextView = itemView.findViewById(R.id.lat)
@@ -44,7 +49,13 @@ class CitiesAdapter(val context: Context, val items: MutableList<CitiesData>): R
             lon.text = data.coord.lon.toString()
 
             map.setOnClickListener {
-                Toast.makeText(context, "${data.coord.lat}, ${data.coord.lon}", Toast.LENGTH_SHORT).show()
+                val uri: String = java.lang.String.format(
+                    Locale.ENGLISH,
+                    "geo:%f,%f",
+                    data.coord.lat,
+                    data.coord.lon
+                )
+                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(uri)))
             }
         }
     }
@@ -53,17 +64,17 @@ class CitiesAdapter(val context: Context, val items: MutableList<CitiesData>): R
         return filter
     }
 
-    private val filter: Filter = object: Filter(){
+    private val filter: Filter = object : Filter() {
         override fun performFiltering(constraint: CharSequence?): FilterResults {
             val filteredList = arrayListOf<CitiesData>()
-            if (constraint.toString().isEmpty()){
+            if (constraint.toString().isEmpty()) {
                 filteredList.addAll(itemsAll)
             } else {
-                val filterpattern = constraint.toString().toLowerCase().trim{it <= ' '}
+                val filterpattern = constraint.toString().toLowerCase().trim { it <= ' ' }
                 for (item in itemsAll) {
-                    if (item.name.toLowerCase().contains(filterpattern)) {
+                    if (item.name.toLowerCase().startsWith(filterpattern)) {
                         filteredList.add(item)
-                    } else if(item.number.contains(filterpattern)){
+                    } else if (item.country.startsWith(filterpattern)) {
                         filteredList.add(item)
                     }
                 }
